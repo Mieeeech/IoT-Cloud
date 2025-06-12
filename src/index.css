@@ -1,13 +1,72 @@
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
+
+.logo {
+  margin: 0px 20px 10px 20px;
+  width: 500px;
+  height: 200px;
+  flex: 1;
+}
+.demo-text {
+  border: 1px solid black;
+  font-size: 50px;
+  flex: 1;
+  margin: 0px 20px 40px 20px;
+}
+
+.div-field-text {
+  padding: 14px;
+  display: flex;
+  border: 1px solid black;
+  border-radius: 10px;
+  margin: 40px 20px 0px 20px;
+}
+.field-text {
+  padding: 14px;
+  width: 100%;
+  height: 60px;
+  border-radius: 10px;
+}
+
+.div-button {
+  border: 1px solid black;
+  margin: 30px 20px 10px 20px;
+  width: 200px;
+  height: 70px;
+}
+
+.button {
+  width: 100px;
+  height: 50px;
+  border-radius: 5px;
+  background-color: rgb(88, 183, 218);
+  color: white;
+  font-style: bold;
+  font-size: 20px;
+}
+/*
+.div-nav-element{
+  font-style: bold;
+  color: darkkhaki;
+  font-size: 30px;
+}
+
+.set-collor-background{
+  width: 300px;
+  height: 100px;
+  font-style: bold;
+  font-size: 20px;
+  border-radius: 10px;
+}
+*/
