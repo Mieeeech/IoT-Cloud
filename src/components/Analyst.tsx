@@ -31,6 +31,7 @@ const timeOptions: Record<string, string> = {
   "Letzte 30 Minuten": "-30m",
   "Letzte 60 Minuten": "-1h",
   "Letzte 24 Stunden": "-24h",
+  "Alle Daten": "0",
 };
 
 const Analyst: React.FC<AnalystProps> = ({ isDarkMode }) => {

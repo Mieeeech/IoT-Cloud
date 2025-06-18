@@ -1,10 +1,10 @@
-// src/services/influxService.ts
 import { InfluxDB } from "@influxdata/influxdb-client";
 
-const token = "DEIN_TOKEN";
-const org = "DEINE_ORG";
-const bucket = "DEIN_BUCKET";
-const url = "http://192.168.1.42:8086"; // IP von deinem Raspberry Pi
+const token = "kSRa2vJQUdUs3vlmuUCXBnBsQ5y_PVuhgCnntVkBIQimfz_TBaoTyFbmDV7hT_PXLyN-2vrZju5hB0IAsCwIYg==";
+const org = "Haw"; // exakt wie aus influx org list
+const bucket = "messdaten";
+const url = "http://192.168.137.133:8086";
+
 
 const client = new InfluxDB({ url, token });
 const queryApi = client.getQueryApi(org);
@@ -17,7 +17,7 @@ export const fetchSensorData = (
     const results: { time: string; value: number }[] = [];
 
     const fluxQuery = `from(bucket: "${bucket}")
-      |> range(start: ${JSON.stringify(timeRange)})
+      |> range(start: ${timeRange})
       |> filter(fn: (r) => r._measurement == "${measurement}")`;
 
     queryApi.queryRows(fluxQuery, {
