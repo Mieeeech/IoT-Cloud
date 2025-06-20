@@ -11,6 +11,7 @@ import MuiDrawer from "./components/MuiDrwer";
 import { homeContainer } from "./style";
 //import DataTable from "./components/DataTable";
 import DataTable from "./components/gridTable";
+import LiveData from "./components/LiveData";
 
 const App: React.FC = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -36,6 +37,10 @@ const App: React.FC = () => {
             <Route
               path="/Analyst"
               element={<Analyst isDarkMode={isDarkMode} />}
+            />
+            <Route
+              path="/LiveData"
+              element={<LiveData isDarkMode={isDarkMode} />}
             />
             <Route
               path="/DataTable"

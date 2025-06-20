@@ -12,6 +12,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import { TbDeviceAnalytics } from "react-icons/tb";
 import { RxDashboard } from "react-icons/rx";
 import { FaFileDownload } from "react-icons/fa";
+import SensorsIcon from "@mui/icons-material/Sensors";
 interface MuiDrawerProps {
   toggleTheme: () => void;
   isDarkMode: boolean;
@@ -22,6 +23,9 @@ const AnalyticsIcon = TbDeviceAnalytics as unknown as React.FC<{
 }>;
 const DashboardIcon = RxDashboard as unknown as React.FC<{ size?: number }>;
 const DownloadIcon = FaFileDownload as unknown as React.FC<{ size?: number }>;
+const LiveDataIcon: React.FC<{ size?: number }> = ({ size = 24 }) => (
+  <SensorsIcon sx={{ fontSize: size }} />
+);
 
 const MuiDrawer: React.FC<MuiDrawerProps> = ({ toggleTheme, isDarkMode }) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -82,6 +86,21 @@ const MuiDrawer: React.FC<MuiDrawerProps> = ({ toggleTheme, isDarkMode }) => {
             >
               <AnalyticsIcon size={50} />
               Analytics
+            </Link>
+          </Box>
+          <Box>
+            <Link
+              to="/LiveData"
+              style={{
+                color: textColor,
+                textDecoration: "none",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px", // Abstand zwischen Icon und Text
+              }}
+            >
+              <LiveDataIcon size={50} />
+              Live Data
             </Link>
           </Box>
           <Box>
