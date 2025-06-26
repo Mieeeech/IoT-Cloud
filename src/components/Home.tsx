@@ -1,23 +1,31 @@
 // src/Home.tsx
 import React from "react";
-import { Box, Typography, Container } from "@mui/material";
-import { homeContainer } from "../style";
-import Button from "./Button";
-import GearIcon from "./GearIcon";
-import TextField from "./TextField";
+import { Box, Typography, Container,  Menu, MenuItem, } from "@mui/material";
+import { Button } from "@mui/material";
+
 import { useState } from "react";
-import axios from "axios";
-import Icon from "@mdi/react";
-import { mdiEngine, mdiEngineOff } from "@mdi/js";
-import { FaCog, FaCogs } from "react-icons/fa";
-import { motion } from "framer-motion";
+
 
 interface HomeProps {
   isDarkMode: boolean;
 }
 
+
+
 const Home: React.FC<HomeProps> = ({ isDarkMode }) => {
-  const [isMotorOn, setIsMotorOn] = useState(false);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+const [selectedDrive, setSelectedDrive] = useState<string>("Antrieb auswählen");
+
+
+const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+  setAnchorEl(event.currentTarget);
+};
+
+const handleClose = (drive?: string) => {
+  if (drive) setSelectedDrive(drive);
+  setAnchorEl(null);
+};
+
   const URL =
     "https://hec.de/fileadmin/_processed_/3/c/csm_Smart-Port_AdobeStock_Pugun_Photo-Studio_222573128_k_fc4ccadad6.jpg";
 
@@ -40,41 +48,60 @@ const Home: React.FC<HomeProps> = ({ isDarkMode }) => {
         </Box>
 
         <Box className="demo-text" sx={{ flex: 1 }}>
-          <Typography>demo text</Typography>
+          <Typography>System Nachrichten: </Typography>
         </Box>
       </Box>
 
       <Box
-        sx={{
-          flex: 1,
-          display: "flex",
-          alignItems: "center",
-          gap: 2,
-          fontSize: 40,
-        }}
-      >
-        {isMotorOn ? (
-          <>
-            <Icon path={mdiEngine} size={15} color="green" />
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
-              style={{ display: "inline-block" }}
-            >
-              <GearIcon size={80} color="black" />
-            </motion.div>
-          </>
-        ) : (
-          <>
-            <Icon path={mdiEngineOff} size={15} color="red" />
-            <GearIcon size={80} color="black" />
-          </>
-        )}
-        <Button
-          label={isMotorOn ? "Motor AUS" : "Motor AN"}
-          onClick={() => setIsMotorOn((prev) => !prev)}
-        />
-      </Box>
+  sx={{
+    flex: 1,
+    display: "flex",
+    alignItems: "center",
+    gap: 2,
+    fontSize: 40,
+  }}
+>
+  <Button
+    variant="contained"
+    onClick={handleClick}
+    sx={{ backgroundColor: "#1976d2",fontSize: 20, px: 4, py: 2 }} // größerer Button
+  >
+    {selectedDrive}
+  </Button>
+
+  <Menu
+    anchorEl={anchorEl}
+    open={Boolean(anchorEl)}
+    onClose={() => handleClose()}
+    PaperProps={{
+      sx: {
+        backgroundColor: "#1976d2", // Blau (Standard-MUI-Blue)
+        color: "white",             // Weißer Text
+        minWidth: 200,
+      },
+    }}
+  >
+    <MenuItem
+      onClick={() => handleClose("Antrieb 1")}
+      sx={{ fontSize: 18, py: 2 }}
+    >
+      Antrieb 1
+    </MenuItem>
+    <MenuItem
+      onClick={() => handleClose("Antrieb 2")}
+      sx={{ fontSize: 18, py: 2 }}
+    >
+      Antrieb 2
+    </MenuItem>
+    <MenuItem
+      onClick={() => handleClose("Antrieb 3")}
+      sx={{ fontSize: 18, py: 2 }}
+    >
+      Antrieb 3
+    </MenuItem>
+  </Menu>
+</Box>
+
     </Box>
   );
 };

@@ -1,4 +1,3 @@
-// src/pages/Analyst.tsx
 import React, { useState, useEffect } from "react";
 import {
   Box,
@@ -9,6 +8,8 @@ import {
   InputLabel,
   useMediaQuery,
   useTheme,
+  Switch,
+  FormControlLabel,
 } from "@mui/material";
 import { LineChart } from "@mui/x-charts/LineChart";
 import { fetchSensorData } from "../services/influxService";
@@ -17,12 +18,12 @@ interface AnalystProps {
   isDarkMode: boolean;
 }
 
-const sensorMap: Record<string, string> = {
-  "Spannung Vor Umrichter": "spannung_vor_umrichter",
-  "Spannung nach Umrichter": "spannung_nach_umrichter",
-  "Strom vor Umrichter": "strom_vor_umrichter",
-  "Strom nach Umrichter": "strom_nach_umrichter",
-  Drehzahl: "drehzahl",
+const sensorMap: Record<string, { key: string; unit: string }> = {
+  "Spannung Vor Umrichter": { key: "spannung_vor_umrichter", unit: "V" },
+  "Spannung nach Umrichter": { key: "spannung_nach_umrichter", unit: "V" },
+  "Strom vor Umrichter": { key: "strom_vor_umrichter", unit: "A" },
+  "Strom nach Umrichter": { key: "strom_nach_umrichter", unit: "A" },
+  Drehzahl: { key: "drehzahl", unit: "U/min" },
 };
 
 const timeOptions: Record<string, string> = {
@@ -36,31 +37,53 @@ const timeOptions: Record<string, string> = {
 
 const Analyst: React.FC<AnalystProps> = ({ isDarkMode }) => {
   const [selectedChart, setSelectedChart] = useState("Spannung Vor Umrichter");
-  const [selectedTimeRange, setSelectedTimeRange] =
-    useState("Letzte 60 Minuten");
+  const [selectedTimeRange, setSelectedTimeRange] = useState("Letzte 60 Minuten");
   const [chartData, setChartData] = useState<number[]>([]);
   const [timeLabels, setTimeLabels] = useState<string[]>([]);
+  const [isLive, setIsLive] = useState(false);
 
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("md"));
-
   const backgroundColor = isDarkMode ? "#7E909A" : "#F1F1F1";
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const measurement = sensorMap[selectedChart];
-      const timeRange = timeOptions[selectedTimeRange];
-      try {
-        const data = await fetchSensorData(timeRange, measurement);
-        setChartData(data.map((d) => d.value));
-        setTimeLabels(data.map((d) => new Date(d.time).toLocaleTimeString()));
-      } catch (err) {
-        console.error("Fehler beim Laden der Daten:", err);
-      }
-    };
+  const fetchData = async () => {
+    const measurement = sensorMap[selectedChart].key;
+    const timeRange = isLive ? "-1m" : timeOptions[selectedTimeRange];
+    try {
+      const data = await fetchSensorData(timeRange, measurement);
+      setChartData(data.map((d) => d.value));
 
+      const labels = data.map((d) => {
+        const date = new Date(d.time);
+        return date.toLocaleString("de-DE", {
+          day: "2-digit",
+          month: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        });
+      });
+
+      setTimeLabels(labels);
+    } catch (err) {
+      console.error("Fehler beim Laden der Daten:", err);
+    }
+  };
+
+  useEffect(() => {
     fetchData();
-  }, [selectedChart, selectedTimeRange]);
+  }, [selectedChart, selectedTimeRange, isLive]);
+
+  useEffect(() => {
+    if (!isLive) return;
+    const interval = setInterval(() => {
+      fetchData();
+    }, 2000); // alle 2 Sekunden
+
+    return () => clearInterval(interval);
+  }, [isLive, selectedChart]);
+
+  const selectedSensor = sensorMap[selectedChart];
 
   return (
     <Box
@@ -87,8 +110,21 @@ const Analyst: React.FC<AnalystProps> = ({ isDarkMode }) => {
         </Select>
       </FormControl>
 
+      {/* Live Toggle */}
+      <FormControlLabel
+        control={
+          <Switch
+            checked={isLive}
+            onChange={(e) => setIsLive(e.target.checked)}
+            color="success"
+          />
+        }
+        label="Live"
+        sx={{ mb: 2 }}
+      />
+
       {/* Zeitbereich Auswahl */}
-      <FormControl fullWidth sx={{ mb: 4 }}>
+      <FormControl fullWidth sx={{ mb: 4 }} disabled={isLive}>
         <InputLabel id="time-range-label">Zeitbereich</InputLabel>
         <Select
           labelId="time-range-label"
@@ -113,10 +149,28 @@ const Analyst: React.FC<AnalystProps> = ({ isDarkMode }) => {
           backgroundColor: isDarkMode ? "#556070" : "#ffffff",
         }}
       >
-        <Typography mb={2}>📈 {selectedChart}</Typography>
+        <Typography mb={2}>
+          📈 {selectedChart} ({selectedSensor.unit})
+        </Typography>
         <LineChart
-          xAxis={[{ data: timeLabels, scaleType: "point" }]}
-          series={[{ data: chartData }]}
+          xAxis={[
+            {
+              data: timeLabels,
+              scaleType: "point",
+              label: "Zeit (DD.MM. HH:MM:SS)",
+            },
+          ]}
+          yAxis={[
+            {
+              label: selectedSensor.unit,
+            },
+          ]}
+          series={[
+            {
+              data: chartData,
+              label: `${selectedChart} (${selectedSensor.unit})`,
+            },
+          ]}
           height={300}
         />
       </Box>
