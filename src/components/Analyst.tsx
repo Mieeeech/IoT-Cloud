@@ -12,13 +12,21 @@ import {
   FormControlLabel,
 } from "@mui/material";
 import { LineChart } from "@mui/x-charts/LineChart";
-import { fetchSensorData } from "../services/influxService";
+import { fetchSensorDataWithField } from "../services/influxService";
 
 interface AnalystProps {
   isDarkMode: boolean;
 }
 
-const sensorMap: Record<string, { key: string; unit: string }> = {
+const sensorMap: Record<
+  string,
+  { key: string; unit: string; field?: string }
+> = {
+  "Soll Frequenz": { key: "Data_FU", field: "Sollfrequenz", unit: "Hz" },
+  "Ist Frequenz": { key: "Data_FU", field: "Istfrequenz", unit: "Hz" },
+  "Momentstrom": { key: "Data_FU", field: "Momentstrom", unit: "A" },
+  "ZSW": { key: "Data_FU", field: "ZSW", unit: "g" },
+   "Vibrationswert": { key: "Data_Vibration", field: "Vibrationswert", unit: "g" },
   "Spannung Vor Umrichter": { key: "spannung_vor_umrichter", unit: "V" },
   "Spannung nach Umrichter": { key: "spannung_nach_umrichter", unit: "V" },
   "Strom vor Umrichter": { key: "strom_vor_umrichter", unit: "A" },
@@ -32,12 +40,14 @@ const timeOptions: Record<string, string> = {
   "Letzte 30 Minuten": "-30m",
   "Letzte 60 Minuten": "-1h",
   "Letzte 24 Stunden": "-24h",
+  "Letzte 30 Tage" : "-30d",
+  "Letzte 8 Tage" : "-8d",
   "Alle Daten": "0",
 };
 
 const Analyst: React.FC<AnalystProps> = ({ isDarkMode }) => {
   const [selectedChart, setSelectedChart] = useState("Spannung Vor Umrichter");
-  const [selectedTimeRange, setSelectedTimeRange] = useState("Letzte 60 Minuten");
+  const [selectedTimeRange, setSelectedTimeRange] = useState("Letzte 1 Minute");
   const [chartData, setChartData] = useState<number[]>([]);
   const [timeLabels, setTimeLabels] = useState<string[]>([]);
   const [isLive, setIsLive] = useState(false);
@@ -47,10 +57,18 @@ const Analyst: React.FC<AnalystProps> = ({ isDarkMode }) => {
   const backgroundColor = isDarkMode ? "#7E909A" : "#F1F1F1";
 
   const fetchData = async () => {
-    const measurement = sensorMap[selectedChart].key;
+    const selectedSensor = sensorMap[selectedChart];
+    const measurement = selectedSensor.key;
+    const field = selectedSensor.field;
     const timeRange = isLive ? "-1m" : timeOptions[selectedTimeRange];
+
     try {
-      const data = await fetchSensorData(timeRange, measurement);
+      const data = await fetchSensorDataWithField(
+        timeRange,
+        measurement,
+        field ?? "_value" // Fallback
+      );
+
       setChartData(data.map((d) => d.value));
 
       const labels = data.map((d) => {
@@ -78,8 +96,7 @@ const Analyst: React.FC<AnalystProps> = ({ isDarkMode }) => {
     if (!isLive) return;
     const interval = setInterval(() => {
       fetchData();
-    }, 2000); // alle 2 Sekunden
-
+    }, 2000);
     return () => clearInterval(interval);
   }, [isLive, selectedChart]);
 

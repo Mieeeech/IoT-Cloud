@@ -9,7 +9,7 @@ import {
   Select,
   SelectChangeEvent,
 } from "@mui/material";
-import { fetchSensorData } from "../services/influxService";
+import { fetchSensorData, fetchSensorDataWithField } from "../services/influxService";
 
 interface DataTableProps {
   isDarkMode: boolean;
@@ -21,15 +21,14 @@ const columns: GridColDef[] = [
   { field: "value", headerName: "Wert", width: 130 },
 ];
 
-
-
-
 const timeOptions: { [key: string]: string } = {
   "Letzte 1 Minute": "-1m",
   "Letzte 5 Minuten": "-5m",
   "Letzte 30 Minuten": "-30m",
   "Letzte 60 Minuten": "-1h",
   "Letzte 24 Stunden": "-24h",
+  "Letzte 8 Tage" : "-8d",
+  "Letzte 30 Tage" : "-30d",
   "Alle Daten": "0",
 };
 
@@ -39,22 +38,34 @@ const measurementOptions: string[] = [
   "strom_vor_umrichter",
   "strom_nach_umrichter",
   "drehzahl",
+  "Data_FU", // neue Messung mit Feldern
 ];
+
+const fieldOptionsMap: { [key: string]: string[] } = {
+  "drehzahl": [],
+  "spannung_vor_umrichter": [],
+  "spannung_nach_umrichter": [],
+  "strom_vor_umrichter": [],
+  "strom_nach_umrichter": [],
+  "Data_FU": ["Sollfrequenz", "Istfrequenz", "Momentstrom", "ZSW"],
+};
 
 export default function DataTable({ isDarkMode }: DataTableProps) {
   const [rows, setRows] = useState<any[]>([]);
-  const [selectedTimeRange, setSelectedTimeRange] =
-    useState("Letzte 30 Minuten");
-  const [selectedMeasurement, setSelectedMeasurement] = useState(
-    "spannung_vor_umrichter"
-  );
+  const [selectedTimeRange, setSelectedTimeRange] = useState("Letzte 30 Minuten");
+  const [selectedMeasurement, setSelectedMeasurement] = useState("spannung_vor_umrichter");
+  const [selectedField, setSelectedField] = useState("");
 
   const loadData = async () => {
     try {
-      const data = await fetchSensorData(
-        timeOptions[selectedTimeRange],
-        selectedMeasurement
-      );
+      const timeRange = timeOptions[selectedTimeRange];
+      let data;
+
+      if (selectedField) {
+        data = await fetchSensorDataWithField(timeRange, selectedMeasurement, selectedField);
+      } else {
+        data = await fetchSensorData(timeRange, selectedMeasurement);
+      }
 
       const formattedRows = data.map((item, index) => ({
         id: index + 1,
@@ -69,90 +80,115 @@ export default function DataTable({ isDarkMode }: DataTableProps) {
 
   useEffect(() => {
     loadData();
-  }, [selectedTimeRange, selectedMeasurement]);
+  }, [selectedTimeRange, selectedMeasurement, selectedField]);
 
   const handleTimeChange = (event: SelectChangeEvent) => {
     setSelectedTimeRange(event.target.value);
   };
 
   const handleMeasurementChange = (event: SelectChangeEvent) => {
-    setSelectedMeasurement(event.target.value);
+    const newMeasurement = event.target.value;
+    setSelectedMeasurement(newMeasurement);
+    setSelectedField(""); // Feld zurücksetzen, wenn Messung sich ändert
   };
+
+  const handleFieldChange = (event: SelectChangeEvent) => {
+    setSelectedField(event.target.value);
+  };
+
   const downloadCSV = () => {
-  if (rows.length === 0) return;
+    if (rows.length === 0) return;
 
-  const header = "ID,Zeit,Wert\n";
-  const csvRows = rows
-    .map((row) => `${row.id},"${row.time}",${row.value}`)
-    .join("\n");
-  const csvContent = header + csvRows;
+    const header = "ID,Zeit,Wert\n";
+    const csvRows = rows
+      .map((row) => `${row.id},"${row.time}",${row.value}`)
+      .join("\n");
+    const csvContent = header + csvRows;
 
-  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
 
-  const link = document.createElement("a");
-  link.setAttribute("href", url);
-  link.setAttribute(
-    "download",
-    `sensor_data_${selectedMeasurement}_${selectedTimeRange.replaceAll(" ", "_")}.csv`
-  );
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-};
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute(
+      "download",
+      `sensor_data_${selectedMeasurement}${selectedField ? "_" + selectedField : ""}_${selectedTimeRange.replaceAll(" ", "_")}.csv`
+    );
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <>
-     <Box sx={{ display: "flex", gap: 2, mb: 2, alignItems: "center" }}>
-  <FormControl fullWidth>
-    <InputLabel id="zeitfilter-label">Zeitfilter</InputLabel>
-    <Select
-      labelId="zeitfilter-label"
-      value={selectedTimeRange}
-      label="Zeitfilter"
-      onChange={handleTimeChange}
-    >
-      {Object.keys(timeOptions).map((label) => (
-        <MenuItem key={label} value={label}>
-          {label}
-        </MenuItem>
-      ))}
-    </Select>
-  </FormControl>
+      <Box sx={{ display: "flex", gap: 2, mb: 2, alignItems: "center" }}>
+        <FormControl fullWidth>
+          <InputLabel id="zeitfilter-label">Zeitfilter</InputLabel>
+          <Select
+            labelId="zeitfilter-label"
+            value={selectedTimeRange}
+            label="Zeitfilter"
+            onChange={handleTimeChange}
+          >
+            {Object.keys(timeOptions).map((label) => (
+              <MenuItem key={label} value={label}>
+                {label}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
 
-  <FormControl fullWidth>
-    <InputLabel id="measurement-label">Messung</InputLabel>
-    <Select
-      labelId="measurement-label"
-      value={selectedMeasurement}
-      label="Messung"
-      onChange={handleMeasurementChange}
-    >
-      {measurementOptions.map((m) => (
-        <MenuItem key={m} value={m}>
-          {m.replaceAll("_", " ")}
-        </MenuItem>
-      ))}
-    </Select>
-  </FormControl>
+        <FormControl fullWidth>
+          <InputLabel id="measurement-label">Messung</InputLabel>
+          <Select
+            labelId="measurement-label"
+            value={selectedMeasurement}
+            label="Messung"
+            onChange={handleMeasurementChange}
+          >
+            {measurementOptions.map((m) => (
+              <MenuItem key={m} value={m}>
+                {m.replaceAll("_", " ")}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
 
-  <Box>
-    <button
-      onClick={downloadCSV}
-      style={{
-        padding: "8px 16px",
-        backgroundColor: isDarkMode ? "#4CAF50" : "#2196F3",
-        color: "white",
-        border: "none",
-        borderRadius: 4,
-        cursor: "pointer",
-      }}
-    >
-      CSV herunterladen
-    </button>
-  </Box>
-</Box>
+        {fieldOptionsMap[selectedMeasurement] &&
+          fieldOptionsMap[selectedMeasurement].length > 0 && (
+            <FormControl fullWidth>
+              <InputLabel id="field-label">Feld</InputLabel>
+              <Select
+                labelId="field-label"
+                value={selectedField}
+                label="Feld"
+                onChange={handleFieldChange}
+              >
+                {fieldOptionsMap[selectedMeasurement].map((f) => (
+                  <MenuItem key={f} value={f}>
+                    {f}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          )}
 
+        <Box>
+          <button
+            onClick={downloadCSV}
+            style={{
+              padding: "8px 16px",
+              backgroundColor: isDarkMode ? "#4CAF50" : "#2196F3",
+              color: "white",
+              border: "none",
+              borderRadius: 4,
+              cursor: "pointer",
+            }}
+          >
+            CSV herunterladen
+          </button>
+        </Box>
+      </Box>
 
       <Paper
         sx={{
@@ -165,7 +201,6 @@ export default function DataTable({ isDarkMode }: DataTableProps) {
           rows={rows}
           columns={columns}
           pageSizeOptions={[5, 10]}
-          
           sx={{
             border: 0,
             backgroundColor: isDarkMode ? "#7E909A" : "#F1F1F1",

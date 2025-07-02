@@ -16,7 +16,8 @@ const LiveData: React.FC<LiveDataProps> = ({ isDarkMode }) => {
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
   const backgroundColor = isDarkMode ? "#7E909A" : "#F1F1F1";
-  const mqttValue = useMqtt("sensor/spannung_vor_umrichter");
+
+  const mqttData = useMqtt("sensor/logdata");
 
   const gaugeStyle = {
     startAngle: 0,
@@ -32,13 +33,14 @@ const LiveData: React.FC<LiveDataProps> = ({ isDarkMode }) => {
     { label: "Strom nach Umrichter", value: 90 },
     { label: "Drehzahl", custom: true },
     { label: "Frequenz", value: 75 },
+    { label: "vibrations", dynamic: true },
   ];
 
   return (
     <Box
       sx={{
-        width: "100vw", // gesamte Fensterbreite
-        height: "100vh", // gesamte Fensterhöhe
+        width: "100vw",
+        height: "100vh",
         px: 2,
         py: 4,
         backgroundColor,
@@ -70,8 +72,12 @@ const LiveData: React.FC<LiveDataProps> = ({ isDarkMode }) => {
               </GaugeContainer>
             ) : (
               <Gauge
-                value={mqttValue ? parseFloat(mqttValue) : 0}
-                width={200}
+                value={
+                  g.dynamic && mqttData?.value !== undefined
+                    ? mqttData.value
+                    : g.value ?? 0
+                }
+                width={300}
                 height={200}
                 {...gaugeStyle}
               />
