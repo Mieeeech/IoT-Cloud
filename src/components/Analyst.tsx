@@ -34,15 +34,15 @@ const sensorMap: Record<
   Drehzahl: { key: "drehzahl", unit: "U/min" },
 };
 
-const timeOptions: Record<string, string> = {
-  "Letzte 1 Minute": "-1m",
-  "Letzte 5 Minuten": "-5m",
-  "Letzte 30 Minuten": "-30m",
-  "Letzte 60 Minuten": "-1h",
-  "Letzte 24 Stunden": "-24h",
-  "Letzte 30 Tage" : "-30d",
-  "Letzte 8 Tage" : "-8d",
-  "Alle Daten": "0",
+const timeOptions: Record<string, { range: string; window: string }> = {
+  "Letzte 1 Minute": { range: "-1m", window: "100ms" },
+  "Letzte 5 Minuten": { range: "-5m", window: "1s" },
+  "Letzte 30 Minuten": { range: "-30m", window: "10s" },
+  "Letzte 60 Minuten": { range: "-1h", window: "1m" },
+  "Letzte 24 Stunden": { range: "-24h", window: "30m" },
+  "Letzte 30 Tage": { range: "-30d", window: "1h" },
+  "Letzte 8 Tage": { range: "-8d", window: "1h" },
+  "Alle Daten": { range: "0", window: "1h" },
 };
 
 const Analyst: React.FC<AnalystProps> = ({ isDarkMode }) => {
@@ -60,14 +60,17 @@ const Analyst: React.FC<AnalystProps> = ({ isDarkMode }) => {
     const selectedSensor = sensorMap[selectedChart];
     const measurement = selectedSensor.key;
     const field = selectedSensor.field;
-    const timeRange = isLive ? "-1m" : timeOptions[selectedTimeRange];
+    const timeOption = isLive
+    ? { range: "-1m", window: "100ms" }
+    : timeOptions[selectedTimeRange];
 
     try {
-      const data = await fetchSensorDataWithField(
-        timeRange,
-        measurement,
-        field ?? "_value" // Fallback
-      );
+    const data = await fetchSensorDataWithField(
+      timeOption.range,
+      measurement,
+      field ?? "_value",
+      timeOption.window  // <-- NEU übergeben
+    );
 
       setChartData(data.map((d) => d.value));
 
@@ -96,7 +99,7 @@ const Analyst: React.FC<AnalystProps> = ({ isDarkMode }) => {
     if (!isLive) return;
     const interval = setInterval(() => {
       fetchData();
-    }, 2000);
+    }, 1000);
     return () => clearInterval(interval);
   }, [isLive, selectedChart]);
 

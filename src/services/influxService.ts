@@ -12,7 +12,8 @@ const queryApi = client.getQueryApi(org);
 export const fetchSensorDataWithField = (
   timeRange: string,
   measurement: string,
-  field: string
+  field: string,
+  windowstime:string
 ): Promise<{ time: string; value: number }[]> => {
   return new Promise((resolve, reject) => {
     const results: { time: string; value: number }[] = [];
@@ -21,7 +22,7 @@ export const fetchSensorDataWithField = (
       |> range(start: ${timeRange})
       |> filter(fn: (r) => r._measurement == "${measurement}")
       |> filter(fn: (r) => r._field == "${field}")
-      |> window(every: 1s)
+      |> window(every: ${windowstime})
       |> limit(n: 1)
       |> yield()
     `;
@@ -45,7 +46,8 @@ export const fetchSensorDataWithField = (
 // ✅ Allgemeine Messdaten abfragen (ohne Feld)
 export const fetchSensorData = (
   timeRange: string,
-  measurement: string
+  measurement: string,
+  windowstime:string
 ): Promise<{ time: string; value: number }[]> => {
   return new Promise((resolve, reject) => {
     const results: { time: string; value: number }[] = [];
@@ -53,6 +55,9 @@ export const fetchSensorData = (
     const fluxQuery = `from(bucket: "${bucket}")
       |> range(start: ${timeRange})
       |> filter(fn: (r) => r._measurement == "${measurement}")
+      |> window(every: ${windowstime})
+      |> limit(n: 1)
+      |> yield()
     `;
 
     queryApi.queryRows(fluxQuery, {

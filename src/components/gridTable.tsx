@@ -21,15 +21,15 @@ const columns: GridColDef[] = [
   { field: "value", headerName: "Wert", width: 130 },
 ];
 
-const timeOptions: { [key: string]: string } = {
-  "Letzte 1 Minute": "-1m",
-  "Letzte 5 Minuten": "-5m",
-  "Letzte 30 Minuten": "-30m",
-  "Letzte 60 Minuten": "-1h",
-  "Letzte 24 Stunden": "-24h",
-  "Letzte 8 Tage" : "-8d",
-  "Letzte 30 Tage" : "-30d",
-  "Alle Daten": "0",
+const timeOptions: Record<string, { range: string; window: string }> = {
+  "Letzte 1 Minute": { range: "-1m", window: "100ms" },
+  "Letzte 5 Minuten": { range: "-5m", window: "1s" },
+  "Letzte 30 Minuten": { range: "-30m", window: "10s" },
+  "Letzte 60 Minuten": { range: "-1h", window: "1m" },
+  "Letzte 24 Stunden": { range: "-24h", window: "30m" },
+  "Letzte 30 Tage": { range: "-30d", window: "1h" },
+  "Letzte 8 Tage": { range: "-8d", window: "1h" },
+  "Alle Daten": { range: "0", window: "1h" },
 };
 
 const measurementOptions: string[] = [
@@ -58,13 +58,13 @@ export default function DataTable({ isDarkMode }: DataTableProps) {
 
   const loadData = async () => {
     try {
-      const timeRange = timeOptions[selectedTimeRange];
+      const { range, window } = timeOptions[selectedTimeRange];
       let data;
 
       if (selectedField) {
-        data = await fetchSensorDataWithField(timeRange, selectedMeasurement, selectedField);
+        data = await fetchSensorDataWithField(range, selectedMeasurement, selectedField, window);
       } else {
-        data = await fetchSensorData(timeRange, selectedMeasurement);
+        data = await fetchSensorData(range, selectedMeasurement, window);
       }
 
       const formattedRows = data.map((item, index) => ({
