@@ -22,38 +22,30 @@ const columns: GridColDef[] = [
 ];
 
 const timeOptions: Record<string, { range: string; window: string }> = {
-  "Letzte 1 Minute": { range: "-1m", window: "100ms" },
-  "Letzte 5 Minuten": { range: "-5m", window: "1s" },
-  "Letzte 30 Minuten": { range: "-30m", window: "10s" },
-  "Letzte 60 Minuten": { range: "-1h", window: "1m" },
-  "Letzte 24 Stunden": { range: "-24h", window: "30m" },
+  "Letzte 1 Minute": { range: "-1m", window: "25ms" },
+  "Letzte 5 Minuten": { range: "-5m", window: "150ms" },
+  "Letzte 30 Minuten": { range: "-30m", window: "900ms" },
+  "Letzte 60 Minuten": { range: "-1h", window: "1500ms" },
+  "Letzte 24 Stunden": { range: "-24h", window: "40s" },
   "Letzte 30 Tage": { range: "-30d", window: "1h" },
-  "Letzte 8 Tage": { range: "-8d", window: "1h" },
+  "Letzte 8 Tage": { range: "-8d", window: "5m" },
   "Alle Daten": { range: "0", window: "1h" },
 };
 
 const measurementOptions: string[] = [
-  "spannung_vor_umrichter",
-  "spannung_nach_umrichter",
-  "strom_vor_umrichter",
-  "strom_nach_umrichter",
-  "drehzahl",
   "Data_FU", // neue Messung mit Feldern
+  "Data_Vibration",
 ];
 
 const fieldOptionsMap: { [key: string]: string[] } = {
-  "drehzahl": [],
-  "spannung_vor_umrichter": [],
-  "spannung_nach_umrichter": [],
-  "strom_vor_umrichter": [],
-  "strom_nach_umrichter": [],
-  "Data_FU": ["Sollfrequenz", "Istfrequenz", "Momentstrom", "ZSW"],
+  "Data_Vibration" : ["Vibrationswert"],
+  "Data_FU": ["Sollfrequenz", "IstfrequenzohneSlip","IstfrequenzmitSlip", "Drehmoment", "ZSW"],
 };
 
 export default function DataTable({ isDarkMode }: DataTableProps) {
   const [rows, setRows] = useState<any[]>([]);
   const [selectedTimeRange, setSelectedTimeRange] = useState("Letzte 30 Minuten");
-  const [selectedMeasurement, setSelectedMeasurement] = useState("spannung_vor_umrichter");
+  const [selectedMeasurement, setSelectedMeasurement] = useState("Drehmoment");
   const [selectedField, setSelectedField] = useState("");
 
   const loadData = async () => {

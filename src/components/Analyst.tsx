@@ -23,30 +23,26 @@ const sensorMap: Record<
   { key: string; unit: string; field?: string }
 > = {
   "Soll Frequenz": { key: "Data_FU", field: "Sollfrequenz", unit: "Hz" },
-  "Ist Frequenz": { key: "Data_FU", field: "Istfrequenz", unit: "Hz" },
-  "Momentstrom": { key: "Data_FU", field: "Momentstrom", unit: "A" },
-  "ZSW": { key: "Data_FU", field: "ZSW", unit: "g" },
-   "Vibrationswert": { key: "Data_Vibration", field: "Vibrationswert", unit: "g" },
-  "Spannung Vor Umrichter": { key: "spannung_vor_umrichter", unit: "V" },
-  "Spannung nach Umrichter": { key: "spannung_nach_umrichter", unit: "V" },
-  "Strom vor Umrichter": { key: "strom_vor_umrichter", unit: "A" },
-  "Strom nach Umrichter": { key: "strom_nach_umrichter", unit: "A" },
-  Drehzahl: { key: "drehzahl", unit: "U/min" },
+  "Ist Frequenz mit Slip": { key: "Data_FU", field: "IstfrequenzmitSlip", unit: "Hz" },
+    "Ist Frequenz ohne Slip": { key: "Data_FU", field: "IstfrequenzohneSlip", unit: "Hz" },
+  "Drehmoment": { key: "Data_FU", field: "Drehmoment", unit: "Nm" },
+  "ZSW": { key: "Data_FU", field: "ZSW", unit: "Zustandswort" },
+   "Vibrationswert": { key: "Data_Vibration", field: "Vibrationswert", unit: "V" },
 };
 
 const timeOptions: Record<string, { range: string; window: string }> = {
-  "Letzte 1 Minute": { range: "-1m", window: "100ms" },
-  "Letzte 5 Minuten": { range: "-5m", window: "1s" },
-  "Letzte 30 Minuten": { range: "-30m", window: "10s" },
-  "Letzte 60 Minuten": { range: "-1h", window: "1m" },
-  "Letzte 24 Stunden": { range: "-24h", window: "30m" },
+  "Letzte 1 Minute": { range: "-1m", window: "25ms" },
+  "Letzte 5 Minuten": { range: "-5m", window: "150ms" },
+  "Letzte 30 Minuten": { range: "-30m", window: "900ms" },
+  "Letzte 60 Minuten": { range: "-1h", window: "1500ms" },
+  "Letzte 24 Stunden": { range: "-24h", window: "40s" },
   "Letzte 30 Tage": { range: "-30d", window: "1h" },
-  "Letzte 8 Tage": { range: "-8d", window: "1h" },
+  "Letzte 8 Tage": { range: "-8d", window: "5m" },
   "Alle Daten": { range: "0", window: "1h" },
 };
 
 const Analyst: React.FC<AnalystProps> = ({ isDarkMode }) => {
-  const [selectedChart, setSelectedChart] = useState("Spannung Vor Umrichter");
+  const [selectedChart, setSelectedChart] = useState("Vibrationswert");
   const [selectedTimeRange, setSelectedTimeRange] = useState("Letzte 1 Minute");
   const [chartData, setChartData] = useState<number[]>([]);
   const [timeLabels, setTimeLabels] = useState<string[]>([]);

@@ -8,6 +8,7 @@ import {
 import React from "react";
 import { useMqtt } from "../services/useMqtt";
 
+
 interface LiveDataProps {
   isDarkMode: boolean;
 }
@@ -17,7 +18,15 @@ const LiveData: React.FC<LiveDataProps> = ({ isDarkMode }) => {
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
   const backgroundColor = isDarkMode ? "#7E909A" : "#F1F1F1";
 
-  const mqttData = useMqtt("sensor/logdata");
+  // 🟢 Zwei Topics einlesen → unterschiedliche Variablennamen verwenden
+  const logData = useMqtt("sensor/logdata");
+  const vibrationData = useMqtt("sensor/vibration");
+
+  // 🧠 Kombinierte Daten für Anzeige
+  const mqttData = {
+    ...logData,
+    ...vibrationData,
+  };
 
   const gaugeStyle = {
     startAngle: 0,
@@ -27,13 +36,12 @@ const LiveData: React.FC<LiveDataProps> = ({ isDarkMode }) => {
   };
 
   const gauges = [
-    { label: "Spannung vor Umrichter", value: 75 },
-    { label: "Spannung nach Umrichter", value: 60 },
-    { label: "Strom vor Umrichter", value: 45 },
-    { label: "Strom nach Umrichter", value: 90 },
-    { label: "Drehzahl", custom: true },
-    { label: "Frequenz", value: 75 },
-    { label: "vibrations", dynamic: true },
+    { label: "Sollfrequenz", field: "Sollfrequenz" },
+    { label: "IstfrequenzmitSlip", field: "IstfrequenzmitSlip" },
+    { label: "IstfrequenzohneSlip", field: "IstfrequenzohneSlip" },
+    {label: "Drehmoment", field:"Drehmoment"},
+    { label: "ZSW", field: "ZSW" },
+    { label: "Vibration", field: "Vibration" },
   ];
 
   return (
@@ -59,29 +67,12 @@ const LiveData: React.FC<LiveDataProps> = ({ isDarkMode }) => {
             }}
           >
             <Typography mb={1}>{g.label}</Typography>
-            {g.custom ? (
-              <GaugeContainer
-                width={isSmallScreen ? 150 : 200}
-                height={isSmallScreen ? 150 : 200}
-                startAngle={-110}
-                endAngle={110}
-                value={30}
-              >
-                <GaugeReferenceArc />
-                <GaugeValueArc />
-              </GaugeContainer>
-            ) : (
-              <Gauge
-                value={
-                  g.dynamic && mqttData?.value !== undefined
-                    ? mqttData.value
-                    : g.value ?? 0
-                }
-                width={300}
-                height={200}
-                {...gaugeStyle}
-              />
-            )}
+            <Gauge
+              value={mqttData?.[g.field] ?? 0}
+              width={300}
+              height={200}
+              {...gaugeStyle}
+            />
           </Grid>
         ))}
       </Grid>

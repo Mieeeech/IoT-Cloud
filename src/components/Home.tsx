@@ -4,6 +4,7 @@ import { Box, Typography, Container,  Menu, MenuItem, } from "@mui/material";
 import { Button } from "@mui/material";
 
 import { useState } from "react";
+import { fetchSensorDataWithField } from "../services/influxService";
 
 
 interface HomeProps {
@@ -15,6 +16,29 @@ interface HomeProps {
 const Home: React.FC<HomeProps> = ({ isDarkMode }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 const [selectedDrive, setSelectedDrive] = useState<string>("Antrieb auswählen");
+const [meldung, setMeldung] = useState<number | null>(null);
+
+const updateMeldung = async () => {
+  try {
+    const results = await fetchSensorDataWithField(
+      "-1m",           // letzte 1 Minute
+      "Maintenance",   // Measurement
+      "Meldung",       // Field
+      "5s"             // Fensterzeit
+    );
+
+    if (results.length > 0) {
+      setMeldung(results[0].value);
+    } else {
+      setMeldung(0);
+    }
+  } catch (error) {
+    console.error("Fehler beim Laden der Meldung:", error);
+    setMeldung(0);
+  }
+};
+
+
 
 
 const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
