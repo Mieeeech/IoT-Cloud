@@ -18,11 +18,11 @@ const LiveData: React.FC<LiveDataProps> = ({ isDarkMode }) => {
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
   const backgroundColor = isDarkMode ? "#7E909A" : "#F1F1F1";
 
-  // 🟢 Zwei Topics einlesen → unterschiedliche Variablennamen verwenden
+
   const logData = useMqtt("sensor/logdata");
   const vibrationData = useMqtt("sensor/vibration");
 
-  // 🧠 Kombinierte Daten für Anzeige
+ 
   const mqttData = {
     ...logData,
     ...vibrationData,

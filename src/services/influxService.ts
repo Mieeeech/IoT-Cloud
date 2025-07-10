@@ -8,7 +8,7 @@ const url = "http://192.168.0.42:8086";
 const client = new InfluxDB({ url, token });
 const queryApi = client.getQueryApi(org);
 
-// ✅ Feldspezifische Daten abfragen
+// Feldspezifische Daten abfragen
 export const fetchSensorDataWithField = (
   timeRange: string,
   measurement: string,
@@ -43,7 +43,7 @@ export const fetchSensorDataWithField = (
   });
 };
 
-// ✅ Allgemeine Messdaten abfragen (ohne Feld)
+//  Allgemeine Messdaten abfragen (ohne Feld)
 export const fetchSensorData = (
   timeRange: string,
   measurement: string,

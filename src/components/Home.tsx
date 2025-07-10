@@ -3,7 +3,7 @@ import React from "react";
 import { Box, Typography, Container,  Menu, MenuItem, } from "@mui/material";
 import { Button } from "@mui/material";
 
-import { useState } from "react";
+import { useState, useEffect  } from "react";
 import { fetchSensorDataWithField } from "../services/influxService";
 
 
@@ -16,27 +16,38 @@ interface HomeProps {
 const Home: React.FC<HomeProps> = ({ isDarkMode }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 const [selectedDrive, setSelectedDrive] = useState<string>("Antrieb auswählen");
-const [meldung, setMeldung] = useState<number | null>(null);
-
+const [meldung, setMeldung] = useState<boolean>(false);
 const updateMeldung = async () => {
   try {
     const results = await fetchSensorDataWithField(
-      "-1m",           // letzte 1 Minute
-      "Maintenance",   // Measurement
-      "Meldung",       // Field
-      "5s"             // Fensterzeit
+      "-1m",           
+      "Maintenance",   
+      "Meldung",       
+      "5s"             
     );
 
     if (results.length > 0) {
-      setMeldung(results[0].value);
+      setMeldung(results[0].value === 1); 
     } else {
-      setMeldung(0);
+      setMeldung(false);
     }
   } catch (error) {
     console.error("Fehler beim Laden der Meldung:", error);
-    setMeldung(0);
+    setMeldung(false);
   }
 };
+
+
+useEffect(() => {
+  updateMeldung(); 
+
+  const interval = setInterval(() => {
+    updateMeldung(); 
+  }, 2000);
+
+  return () => clearInterval(interval); // Aufräumen bei Unmount
+}, []);
+
 
 
 
@@ -72,8 +83,25 @@ const handleClose = (drive?: string) => {
         </Box>
 
         <Box className="demo-text" sx={{ flex: 1 }}>
-          <Typography>System Nachrichten: </Typography>
-        </Box>
+  <Typography variant="h6">System Nachrichten:</Typography>
+
+  {meldung && (
+    <Typography
+      sx={{
+        mt: 2,
+        p: 2,
+        borderRadius: 2,
+        backgroundColor: "#f8d7da",
+        color: "#721c24",
+        fontWeight: "bold",
+        border: "1px solid #f5c6cb",
+      }}
+    >
+      ⚠️ Unerwartete Vibrationen erkannt, bitte Wartung am Motor durchführen!
+    </Typography>
+  )}
+</Box>
+
       </Box>
 
       <Box
@@ -88,7 +116,7 @@ const handleClose = (drive?: string) => {
   <Button
     variant="contained"
     onClick={handleClick}
-    sx={{ backgroundColor: "#1976d2",fontSize: 20, px: 4, py: 2 }} // größerer Button
+    sx={{ backgroundColor: "#1976d2",fontSize: 20, px: 4, py: 2 }} 
   >
     {selectedDrive}
   </Button>
@@ -99,8 +127,8 @@ const handleClose = (drive?: string) => {
     onClose={() => handleClose()}
     PaperProps={{
       sx: {
-        backgroundColor: "#1976d2", // Blau (Standard-MUI-Blue)
-        color: "white",             // Weißer Text
+        backgroundColor: "#1976d2",
+        color: "white",            
         minWidth: 200,
       },
     }}

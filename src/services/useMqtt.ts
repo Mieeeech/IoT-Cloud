@@ -66,8 +66,8 @@ export const useMqtt = (topic: string) => {
       parsed["timestamp"] = tsNum;
       parsed["ZSW"] = zswNum;
       parsed["Sollfrequenz"] = sollNum;
-      parsed["IstfrequenzmitSlip"] = istMitSlipNum;       // ✅ korrekt!
-      parsed["IstfrequenzohneSlip"] = istOhneSlipNum;     // ✅ korrekt!
+      parsed["IstfrequenzmitSlip"] = istMitSlipNum;       
+      parsed["IstfrequenzohneSlip"] = istOhneSlipNum;     
       parsed["Drehmoment"] = drehNum;
     }
   }

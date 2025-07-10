@@ -65,7 +65,7 @@ const Analyst: React.FC<AnalystProps> = ({ isDarkMode }) => {
       timeOption.range,
       measurement,
       field ?? "_value",
-      timeOption.window  // <-- NEU übergeben
+      timeOption.window  
     );
 
       setChartData(data.map((d) => d.value));
