@@ -36,12 +36,14 @@ const LiveData: React.FC<LiveDataProps> = ({ isDarkMode }) => {
   };
 
   const gauges = [
+    { label: "Vibration", field: "Vibration" },
+    { label: "ZSW", field: "ZSW" },
     { label: "Sollfrequenz", field: "Sollfrequenz" },
     { label: "IstfrequenzmitSlip", field: "IstfrequenzmitSlip" },
     { label: "IstfrequenzohneSlip", field: "IstfrequenzohneSlip" },
     {label: "Drehmoment", field:"Drehmoment"},
-    { label: "ZSW", field: "ZSW" },
-    { label: "Vibration", field: "Vibration" },
+    
+    
   ];
 
   return (

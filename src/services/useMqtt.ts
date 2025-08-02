@@ -34,7 +34,7 @@ export const useMqtt = (topic: string) => {
         }
       });
 
-    } else if (message.includes(";")) {
+    }  if (message.includes(";")) {
       // Format: 1751616779285;-0.001 → vibrationsdaten
       const [_, value] = message.split(";");
       const num = parseFloat(value);
@@ -42,7 +42,10 @@ export const useMqtt = (topic: string) => {
         parsed["Vibration"] = num;
       }
 
-    } else if (message.includes(",")) {
+    }  
+    
+    
+    if (message.includes(",")) {
   // Neues CSV-Format: timestamp,zsw,Sollfrequenz,IstfrequenzmitSlip,IstfrequenzohneSlip,Drehmoment
   const parts = message.split(",");
   if (parts.length === 6) {
